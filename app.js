@@ -33,3 +33,70 @@ function escapeHtml(x){return x.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;","
 window.addEventListener("load",()=>{if(s.lastDay!==today()){let y=new Date();y.setDate(y.getDate()-1);if(s.lastDay===y.toISOString().slice(0,10))s.streak++;else if(s.lastDay) s.streak=0;s.lastDay=today();save()}render()})
 
 if("serviceWorker" in navigator) window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js"));
+
+/* THE RESET — final polish */
+(function(){
+  s.profile=s.profile||{name:"My Reset",theme:"soft"};
+  s.profile.theme=s.profile.theme||"soft";
+  s.profile.welcome = s.profile.welcome !== false;
+
+  window.finishWelcome=function(){
+    s.profile.welcome=false; s.profile.name=s.profile.name||"My Reset"; save(); render(); toast("Welcome to your reset ✨");
+  };
+
+  const baseHome=home;
+  window.home=function(){
+    const base=baseHome();
+    const d=s.done[today()]||{};
+    const wins=Object.values(d).filter(Boolean).length;
+    return base + `<div class="card section"><div class="stat-grid">
+      <div class="stat"><span class="small">XP</span><b>${s.xp}</b></div>
+      <div class="stat"><span class="small">Today</span><b>${wins}</b></div>
+      <div class="stat"><span class="small">Streak</span><b>🔥 ${s.streak}</b></div>
+    </div></div>`;
+  };
+
+  const baseProgress=progress;
+  window.progress=function(){
+    let extra="";
+    let arr=[];
+    for(let i=6;i>=0;i--){let d=new Date();d.setDate(d.getDate()-i);let k=d.toISOString().slice(0,10),n=Object.values(s.done[k]||{}).filter(Boolean).length;arr.push({k,n,label:d.toLocaleDateString(undefined,{weekday:"short"}).slice(0,2),day:d.getDate()});}
+    extra=`<div class="card section"><div class="title">Streak calendar 🔥</div><div class="calendar">${arr.map(x=>`<div class="day ${x.n?'done':''} ${x.k===today()?'today':''}">${x.label}<br>${x.day}</div>`).join("")}</div></div>`;
+    return baseProgress()+extra;
+  };
+
+  const baseCustomise=customise;
+  window.customise=function(){
+    return baseCustomise()+`<div class="card section"><div class="title">Install THE RESET 📱</div>
+      <p class="small">Add it to your home screen so it feels like your own app.</p>
+      <button class="secondary" onclick="installReset()">Add to home screen</button></div>`;
+  };
+
+  window.installReset=async function(){
+    if(window.deferredPrompt){window.deferredPrompt.prompt();window.deferredPrompt=null;return;}
+    toast("In Chrome: ⋮ → Add to home screen 📱");
+  };
+
+  window.deferredPrompt=null;
+  window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();window.deferredPrompt=e;});
+
+  const baseProfile=profile;
+  window.profile=function(){
+    return baseProfile().replace('</div>',`<div class="section"><div class="title">Quick profile</div>
+      <div class="small">Keep it simple: this app saves your data on this device.</div></div></div>`);
+  };
+
+  const baseRender=render;
+  window.render=function(){
+    baseRender();
+    const w=document.getElementById("welcome");
+    if(w) w.classList.toggle("hidden",!s.profile.welcome);
+  };
+
+  window.toast=function(t){
+    let e=document.querySelector(".toast");
+    if(!e){e=document.createElement("div");e.className="toast";document.body.appendChild(e);}
+    e.textContent=t;e.classList.add("show");clearTimeout(window.__toast);
+    window.__toast=setTimeout(()=>e.classList.remove("show"),2200);
+  };
+})();
