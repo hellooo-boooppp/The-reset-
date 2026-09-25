@@ -1,16 +1,20 @@
 {
   "name": "THE RESET",
   "short_name": "THE RESET",
-  "start_url": ".",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#fff8fb",
   "theme_color": "#f8e9f1",
   "description": "Reset your routine. Reset your goals. Reset your day.",
+  "prefer_related_applications": false,
   "icons": [
     {
-      "src": "icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "./icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]
